@@ -1,0 +1,22 @@
+#user_photo {
+    position: relative;
+    left: 10px;
+    width: 20px;
+    border-radius: 10px;
+}
+.add-post {
+    width: 50%;
+}
+
+@media screen and (max-width: 900px) {
+    .my-register {
+        display: none;
+    }
+    .blog-header-logo {
+        font-size: 1rem;
+    }
+
+}
+@media screen and (min-width: 900px) {
+
+}

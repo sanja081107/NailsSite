@@ -1,0 +1,24 @@
+{% extends 'main/base.html' %}
+
+{% block body %}
+
+<p>Если Вы уверены что хотите записаться на это время,</p>
+<p>Тогда выберите услугу!</p>
+
+<form method="post">
+    {% csrf_token %}
+    <div>{{ form.non_field_errors }}</div>  <!-- Выдается общая ошибка по всем полям если форма не связана с моделью -->
+
+    <div class="add-post">
+        {% for el in form %}
+            <p><label>{{ el.label }}:</label> {{ el }}</p>
+            <div class="form-error">{{ el.errors }}</div>   <!-- Выдается ошибка по отдельному полю формы -->
+        {% endfor %}
+    </div>
+<a class="btn btn-sm btn-outline-danger" href="{% url 'book_manicure' %}">Вернуться назад</a>
+<button type="submit" class="btn btn-sm btn-outline-success">Подтвердить</button>
+</form>
+
+
+
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends 'main/base.html' %}
+
+{% block body %}
+
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div>{{ form.non_field_errors }}</div>  <!-- Выдается общая ошибка по всем полям если форма не связана с моделью -->
+
+    <div class="add-post">
+        {% for el in form %}
+            <p><label>{{ el.label }}:</label> {{ el }}</p>
+            <div class="form-error">{{ el.errors }}</div>   <!-- Выдается ошибка по отдельному полю формы -->
+        {% endfor %}
+    </div>
+        <button class="btn btn-danger" type="submit">Создать</button>
+</form><br><br>
+
+{% if posts %}
+    <p>Созданные записи: </p>
+    {% for el in posts %}
+        <p>{{ el.title }}&nbsp;&nbsp;
+            {% if el.is_active %}
+                <a class="btn btn-sm btn-outline-danger" href="{% url 'not_active' el.pk %}">Деактивировать</a>
+            {% else %}
+                <a class="btn btn-sm btn-outline-success" href="{% url 'is_active' el.pk %}">Активировать</a>
+            {% endif %}&nbsp;&nbsp;
+            <a href="{% url 'edit_book' el.pk %}"><i class="fa-solid fa-gear"></i></a>&nbsp;&nbsp;
+            {% if el.client %} <span>{{ el.client.first_name }} {{ el.client.last_name }}</span> {% endif %}<br>
+            -----------------------------------------
+        </p>
+    {% endfor %}
+{% endif %}
+
+
+{% endblock %}

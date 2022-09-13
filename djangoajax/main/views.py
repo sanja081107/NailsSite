@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.auth import logout, login
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.views import LoginView
@@ -5,6 +7,9 @@ from django.http import HttpResponse, JsonResponse, HttpResponseNotFound
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView
+from django.utils import timezone
+from django_celery_beat.models import *
+import json
 
 from .forms import *
 from .tasks import *
@@ -106,7 +111,7 @@ def book_manicure(request):
 
 
 def confirm_book(request, pk):
-    post = Post.objects.get(pk=pk)
+    post = Post.objects.get(id=pk)
     today = datetime.date(datetime.now())
     if post.client or post.date < today:
         return HttpResponseNotFound('<h1>Page not found</h1>')
@@ -121,9 +126,19 @@ def confirm_book(request, pk):
             try:
                 service_id = request.POST['service']
                 post.client = request.user
-                post.service = Service.objects.get(pk=service_id)
+                post.service = Service.objects.get(id=service_id)
                 post.save()
-                order_created.delay(post.id)
+                # order_created.delay(post.id)
+                today = datetime.now()
+                PeriodicTask.objects.create(
+                    name='Repeat order {}'.format(post.id),
+                    task='order_created',
+                    # crontab=CrontabSchedule.objects.create(minute=today.minute+1, hour=today.hour),   # day_of_week=today.day, day_of_month=today.month, day_of_year=today.year
+                    interval=IntervalSchedule.objects.get(every=10, period='seconds'),
+                    args=json.dumps([post.id]),
+                    start_time=today,
+                    one_off=True,
+                )
                 return redirect('home')
             except:
                 form.add_error(None, 'Нужно выбрать услугу')  # Создается общая ошибка, если форма не связана с моделью и некорректна

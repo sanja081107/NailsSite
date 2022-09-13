@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'main.apps.MainConfig',
     'django_celery_results',
+    'django_celery_beat',
     'widget_tweaks',
 ]
 
@@ -96,6 +97,7 @@ DATABASES = {
         'PASSWORD': '12345678',
         'HOST': 'localhost',
         'PORT': '3306',
+        'TIME_ZONE': 'Europe/Minsk'
     }
 }
 
@@ -123,7 +125,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'ru'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Minsk'
 
 USE_I18N = True
 
@@ -153,6 +155,7 @@ MEDIA_URL = '/media/'                           # создаем ссылку н
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
+
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_HOST_USER = "sanja081107@gmail.com"
 EMAIL_HOST_PASSWORD = 'wmmokdpwfijpmimq'
@@ -161,16 +164,22 @@ EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = "sanja081107@gmail.com"
 
 
-CELERY_TASK_TRACK_STARTED = True
-CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+# CELERY_ENABLE_UTC = False
+# CELERY_TIMEZONE = 'Europe/Minsk'
+# CELERY_TASK_TRACK_STARTED = True
+# CELERY_TASK_TIME_LIMIT = 30 * 60
+
 
 # celery setting.
 CELERY_CACHE_BACKEND = 'default'
+CELERY_RESULT_BACKEND = 'django-db'
+
 
 # django setting.
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-        'LOCATION': 'my_cache_table',
-    }
-}
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+#         'LOCATION': 'redis://127.0.0.1:6379/1',
+#     }
+# }

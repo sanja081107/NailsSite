@@ -105,7 +105,7 @@ def book_manicure(request):
         return redirect('log_in')
     else:
 
-        today = datetime.now()
+        today = datetime.date(datetime.now())
         # year = today.year
         # month = today.month
         # day = today.day

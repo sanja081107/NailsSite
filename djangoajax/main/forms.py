@@ -6,7 +6,7 @@ from .models import *
 
 
 class PostForm(ModelForm):
-    title = forms.CharField(label='Название', required=True, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Введите название'}))
+    title = forms.CharField(label='Название', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Введите название'}))
     date = forms.DateTimeField(label='День для записи', required=True, widget=forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'date'}))
 
     class Meta:

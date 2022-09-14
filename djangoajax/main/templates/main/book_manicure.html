@@ -65,7 +65,7 @@ $(document).ready(function(){
 <!--        dataType: 'text', не дает вывести информацию в див         -->
             cache: false,
             success: function(data){
-                if (data != 'no' && data != 'no today'){
+                if (data != 'no' && data != 'today'){
                     $("#display").empty();
                     console.log(data);
 
@@ -79,7 +79,7 @@ $(document).ready(function(){
                             $("#display").append(temp);
                         }
                 }
-                if (data == 'no today') {
+                if (data == 'today') {
                     console.log('no');
                     $("#display").empty();
                     var title = "<p>На сегодня нет свободного времени, выберите другой день!</p>"

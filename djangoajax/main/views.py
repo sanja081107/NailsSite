@@ -6,6 +6,7 @@ from django.contrib.auth.views import LoginView
 from django.http import HttpResponse, JsonResponse, HttpResponseNotFound
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
+from django.utils.safestring import mark_safe
 from django.views.generic import CreateView, UpdateView
 from django.utils import timezone
 from django_celery_beat.models import *
@@ -20,7 +21,12 @@ def pageNotFound(request, exception):
 
 
 def home(request):
-    context = {'title': 'Главная', 'title_body': 'Главная страница'}
+    lorem = 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Autem deserunt distinctio ducimus error' \
+            ' ipsa magnam maxime, molestiae, mollitia odio quam recusandae rem, repellendus voluptas! A ad atque' \
+            ' distinctio dolorem ducimus eveniet fugit illum magnam minus neque non perspiciatis possimus, quos' \
+            ' repellendus rerum sed soluta temporibus totam unde vitae voluptas voluptatibus!'
+
+    context = {'title': 'Главная', 'title_body': 'Главная страница', 'cont': lorem}
 
     return render(request, 'main/index.html', context)
 
@@ -75,23 +81,31 @@ def is_active(request, pk):
         post.save()
         return redirect('create_book')
 
+
 def not_active(request, pk):
     if not request.user.is_staff:
         return redirect('home')
     else:
+
         post = Post.objects.get(pk=pk)
+        if post.client:
+            order_canceled.delay(pk)
+            task = PeriodicTask.objects.get(name=post.title)
+            task.delete()
         post.is_active = False
         post.client = None
         post.service = None
         post.save()
+
         return redirect('create_book')
+
 
 def book_manicure(request):
     if not request.user.is_authenticated:
         return redirect('log_in')
     else:
 
-        today = datetime.date(datetime.now())
+        today = datetime.now()
         # year = today.year
         # month = today.month
         # day = today.day
@@ -131,10 +145,10 @@ def confirm_book(request, pk):
                 # order_created.delay(post.id)
                 today = datetime.now()
                 PeriodicTask.objects.create(
-                    name='Repeat order {}'.format(post.id),
+                    name='{}'.format(post.title),
                     task='order_created',
                     # crontab=CrontabSchedule.objects.create(minute=today.minute+1, hour=today.hour),   # day_of_week=today.day, day_of_month=today.month, day_of_year=today.year
-                    interval=IntervalSchedule.objects.get(every=10, period='seconds'),
+                    interval=IntervalSchedule.objects.get(every=5, period='seconds'),
                     args=json.dumps([post.id]),
                     start_time=today,
                     one_off=True,
@@ -163,7 +177,7 @@ def user_detail(request, pk):
             context = {
                 'el': el,
                 'title': el.username,
-                'title_body': el.username
+                'title_body': 'Имя пользователя: ' + el.username
             }
             return render(request, 'main/user_detail.html', context)
 
@@ -234,10 +248,10 @@ def answer_ajax(request):
         date = request.GET['date']
         posts = Post.objects.filter(date=date, client=None, is_active=True)
 
-        if posts and date != str(datetime.date(datetime.now())):
+        if posts and date != str(datetime.now()):
             return JsonResponse({"posts": list(posts.values())})
-        elif date == str(datetime.date(datetime.now())):
-            return HttpResponse('no today', content_type='text/html')
+        elif date == str(datetime.now()):
+            return HttpResponse('today', content_type='text/html')
         else:
             return HttpResponse('no', content_type='text/html')
     else:

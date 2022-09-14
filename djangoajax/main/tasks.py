@@ -9,38 +9,26 @@ def order_created(arg):
     """
     Задача для отправки уведомления по электронной почте при успешном создании заказа.
     """
-    order_id = arg
-    print('hello '+str(order_id))
-    order = Post.objects.get(id=order_id)
-    subject = 'Order nr. {}'.format(order_id)
-    message = 'Dear {},\nYou have successfully placed an order.\nYour order id is {}.'.format(order.title, order.id)
+    post_id = arg
+    post = Post.objects.get(id=post_id)
+    subject = 'Your order {}'.format(post.title)
+    message = 'Dear {},\nYou have successfully placed an order.\nYour time is {}.'.format(post.client.first_name, post.title)
 
-    email = send_mail(subject, message, 'sanja081107@gmail.com', ['alexander_misyuta@mail.ru'])
+    email = send_mail(subject, message, 'sanja081107@gmail.com', [post.client.email])
+
+    return email
+
+@shared_task
+def order_canceled(arg):
+    """
+    Задача для отправки уведомления по электронной почте при отмене заказа.
+    """
+    post = Post.objects.get(id=arg)
+    subject = 'Canceled order'
+    message = 'Dear {},\nYou have successfully canceled.'.format(post.client.first_name,)
+
+    email = send_mail(subject, message, 'sanja081107@gmail.com', [post.client.email])
 
     return email
 
 
-@shared_task
-def setup_periodic_tasks(sender, **kwargs):
-    # Calls test('hello') every 10 seconds.
-    sender.add_periodic_task(10.0, test.s('hello'), name='add every 10')
-
-    # Calls test('world') every 30 seconds
-    sender.add_periodic_task(30.0, test.s('world'), expires=10)
-    #
-    # Executes every Monday morning at 7:30 a.m.
-    sender.add_periodic_task(
-        crontab(hour=7, minute=30, day_of_week=1),
-        test.s('Happy monday!'),
-    )
-
-
-@shared_task(name="test")
-def test(*args):
-    return print(args)
-
-
-@shared_task
-def add(x, y):
-    z = x + y
-    print(z)

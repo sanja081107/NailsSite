@@ -127,7 +127,9 @@
     <nav class="nav d-flex justify-content-between">
       <a class="p-2 link-secondary" href="{% url 'home' %}">Главная страница</a>
       <a class="p-2 link-secondary" href="{% url 'book_manicure' %}">Записаться на ногти</a>
-      {% if request.user.is_staff %}<a class="p-2 link-secondary" href="{% url 'create_book' %}">Редактор записи</a>{% endif %}
+      {% if request.user.is_staff %}<a class="p-2 link-secondary" href="{% url 'create_book' %}">Редактор записи*</a>{% endif %}
+      {% if request.user.is_staff %}<a class="p-2 link-secondary" href="{% url 'all_users' %}">Пользователи*</a>{% endif %}
+      {% if request.user.is_staff %}<a class="p-2 link-secondary" href="{% url 'all_users' %}">Статистика*</a>{% endif %}
       <a class="p-2 link-secondary" href="#">Мои работы</a>
       <a class="p-2 link-secondary" href="#">Сертификаты</a>
       <a class="p-2 link-secondary" href="#">Контакты</a>

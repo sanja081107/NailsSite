@@ -3,7 +3,7 @@
 {% block body %}
 
 
-<form method="post" enctype="multipart/form-data">
+<form class="pb-4 border-bottom" method="post" enctype="multipart/form-data">
     {% csrf_token %}
 
     <div>{{ form.non_field_errors }}</div>  <!-- Выдается общая ошибка по всем полям если форма не связана с моделью -->
@@ -15,12 +15,12 @@
         {% endfor %}
     </div>
         <button class="btn btn-danger" type="submit">Создать</button>
-</form><br><br>
+</form><br>
 
 {% if posts %}
-    <p>Созданные записи: </p>
+    <h4 class="mb-4 fst-italic">Все записи за этот месяц: </h4>
     {% for el in posts %}
-        <p>{{ el.title }}&nbsp;&nbsp;
+        <div class="mb-4 pb-4 col-10 border-bottom">{{ el.title }}&nbsp;&nbsp;
             {% if el.is_active %}
                 {% if not el.client %}
                     <a class="btn btn-sm btn-outline-success" href="{% url 'not_active' el.pk %}"><i class="fa-solid fa-check"></i></a>
@@ -30,17 +30,18 @@
             {% else %}
                 <a class="btn btn-sm btn-outline-danger" href="{% url 'is_active' el.pk %}"><i class="fa-solid fa-xmark"></i></a>
             {% endif %}&nbsp;&nbsp;
+            <a href="{% url 'edit_book' el.pk %}"><i class="fa-solid fa-gear"></i></a>&nbsp;&nbsp;
 
-            <a href="{% url 'edit_book' el.pk %}"><i class="fa-solid fa-gear"></i></a>
             {% if el.client %}
-                {{ el.client.first_name }} {{ el.client.last_name }}
-                <br><br><button class="btn btn-primary" onclick="CancelBook({{ el.id }})">Отменить запись</button>
+                <a class="user-detail-create-book" href="{{ el.client.get_absolute_url }}">{{ el.client.first_name }} {{ el.client.last_name }}</a>
+                <br><br>{{ el.service.title }}
+                <br><br><button class="btn mb-2 btn-primary" onclick="CancelBook({{ el.id }})">Отменить запись</button>
                 <div class="post" id="post-{{ el.id }}"></div>
             {% endif %}
-            <br>
-            -----------------------------------------
-        </p>
+        </div>
     {% endfor %}
+{% else %}
+    <h4 class="mb-4 fst-italic">Нет записей за этот месяц!</h4>
 {% endif %}
 
 <script type="text/javascript">

@@ -10,6 +10,9 @@
 .delete-book-btn {
     margin-right: 10px;
 }
+.user-detail-create-book {
+    text-decoration: none;
+}
 
 @media screen and (max-width: 900px) {
     .my-register {

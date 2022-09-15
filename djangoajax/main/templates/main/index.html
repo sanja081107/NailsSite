@@ -3,6 +3,11 @@
 {% block body %}
 
 {{ cont }}
-{{ users }}
+
+{% if users %}
+    {% for el in users %}
+        <a href="{{ el.get_absolute_url }}">{{ el }}</a>&nbsp;&nbsp;{{ el.first_name }} {{ el.last_name }}<br><br>
+    {% endfor %}
+{% endif %}
 
 {% endblock %}

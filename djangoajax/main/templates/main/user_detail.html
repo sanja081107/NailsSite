@@ -45,7 +45,7 @@
 
 
     {% if el.instagram %}
-        <p><h4>Инстаграм:</h4> {{ el.instagram }}</p>
+        <p><h4>Инстаграм:</h4> <a href="https://www.instagram.com/{{ el.instagram }}/">{{ el.instagram }}</a></p>
     {% else %}
         <p><h4>Инстаграм:</h4> Не заполнено</p>
     {% endif %}

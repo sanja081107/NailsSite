@@ -10,6 +10,7 @@ urlpatterns = [
     path('confirm_book_<int:pk>/', confirm_book),
     path('create_book/', create_book, name='create_book'),
     path('edit_book_<int:pk>/', EditBookView.as_view(), name='edit_book'),
+    path('all_users/', all_users, name='all_users'),
     path('is_active_<int:pk>/', is_active, name='is_active'),
     path('not_active_<int:pk>/', not_active, name='not_active'),
     path('get_answer_ajax/', answer_ajax, name='answer_ajax'),

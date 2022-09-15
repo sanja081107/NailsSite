@@ -7,7 +7,7 @@ from django.urls import reverse
 
 
 class Post(models.Model):
-    title = models.CharField(max_length=255, verbose_name='Название', unique=True, validators=[RegexValidator(regex=r'\.$', message='Model error')])
+    title = models.CharField(max_length=255, verbose_name='Название', validators=[RegexValidator(regex=r'$', message='Model error')])
     client = models.ForeignKey('CustomUser', on_delete=models.PROTECT, verbose_name='Клиент', default=None, blank=True, null=True)
     service = models.ForeignKey('Service', on_delete=models.PROTECT, verbose_name='Доступные услуги', default=None, blank=True, null=True)
     date = models.DateField(verbose_name='Дата', default=None)
@@ -19,7 +19,7 @@ class Post(models.Model):
     class Meta:
         verbose_name = 'Time'
         verbose_name_plural = 'Times'
-        ordering = ['date']
+        ordering = ['-date', 'title']
 
 
 class Service(models.Model):

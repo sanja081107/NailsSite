@@ -1,4 +1,4 @@
-#user_photo {
+.user-photo {
     position: relative;
     left: 10px;
     width: 20px;
@@ -21,8 +21,14 @@
     .blog-header-logo {
         font-size: 1rem;
     }
+    .register-mobile {
+        padding-top: 15px;
+        text-align: center;
+    }
 
 }
 @media screen and (min-width: 900px) {
-
+    .register-mobile {
+        display: none;
+    }
 }

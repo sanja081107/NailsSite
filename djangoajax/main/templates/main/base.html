@@ -92,6 +92,7 @@
     <!-- Custom styles for this template -->
     <link href="https://getbootstrap.com/docs/5.2/examples/blog/blog.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'main/css/style.css' %}">
+    <script type="text/javascript" src="{% static 'main/js/cancel_book.js' %}"></script>
 </head>
 
 
@@ -114,7 +115,7 @@
           <a class="btn btn-sm btn-outline-secondary" href="{% url 'registration' %}">Регистрация</a>
         {% else %}
         <div class="my-register">
-          {% if user.photo %}<img id="user_photo" src="{{ user.photo.url }}" align="right">&nbsp;&nbsp;&nbsp;&nbsp;{% endif %}
+          {% if user.photo %}<img class="user-photo" src="{{ user.photo.url }}" align="right">&nbsp;&nbsp;&nbsp;&nbsp;{% endif %}
           <a class="btn btn-sm btn-outline-secondary" href="{{ user.get_absolute_url }}">Привет {{ user.first_name }}</a>&nbsp;&nbsp;
           <a class="btn btn-sm btn-outline-secondary" href="{% url 'logout' %}">Выйти</a>
         </div>
@@ -123,15 +124,22 @@
     </div>
   </header>
 
+  <div class="register-mobile">
+    {% if user.photo %}<img class="user-photo" src="{{ user.photo.url }}">&nbsp;&nbsp;&nbsp;&nbsp;{% endif %}
+    <a class="btn btn-sm btn-outline-secondary" href="{{ user.get_absolute_url }}">Привет {{ user.first_name }}</a>&nbsp;&nbsp;
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'logout' %}">Выйти</a><br><br>
+  </div>
+
   <div class="nav-scroller py-1 mb-2">
     <nav class="nav d-flex justify-content-between">
       <a class="p-2 link-secondary" href="{% url 'home' %}">Главная страница</a>
       <a class="p-2 link-secondary" href="{% url 'book_manicure' %}">Записаться на ногти</a>
+      <a class="p-2 link-secondary" href="{% url 'my_book' %}">Мои записи</a>
       {% if request.user.is_staff %}<a class="p-2 link-secondary" href="{% url 'create_book' %}">Редактор записи*</a>{% endif %}
       {% if request.user.is_staff %}<a class="p-2 link-secondary" href="{% url 'all_users' %}">Пользователи*</a>{% endif %}
       {% if request.user.is_staff %}<a class="p-2 link-secondary" href="{% url 'all_users' %}">Статистика*</a>{% endif %}
-      <a class="p-2 link-secondary" href="#">Мои работы</a>
-      <a class="p-2 link-secondary" href="#">Сертификаты</a>
+      <a class="p-2 link-secondary" href="#">Работы мастера</a>
+      <a class="p-2 link-secondary" href="{% url 'certificates' %}">Сертификаты</a>
       <a class="p-2 link-secondary" href="#">Контакты</a>
       <a class="p-2 link-secondary" href="#">Обо мне</a>
     </nav>

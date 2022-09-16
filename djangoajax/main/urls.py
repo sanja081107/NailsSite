@@ -8,11 +8,13 @@ urlpatterns = [
     path('', home, name='home'),
     path('book_manicure/', book_manicure, name='book_manicure'),
     path('confirm_book_<int:pk>/', confirm_book),
+    path('my_book/', my_book, name='my_book'),
     path('create_book/', create_book, name='create_book'),
     path('edit_book_<int:pk>/', EditBookView.as_view(), name='edit_book'),
     path('all_users/', all_users, name='all_users'),
     path('is_active_<int:pk>/', is_active, name='is_active'),
     path('not_active_<int:pk>/', not_active, name='not_active'),
+    path('certificates/', certificates, name='certificates'),
     path('get_answer_ajax/', answer_ajax, name='answer_ajax'),
 
     path('registration/', RegisterUser.as_view(), name='registration'),

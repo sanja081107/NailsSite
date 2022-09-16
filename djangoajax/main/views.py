@@ -7,7 +7,7 @@ from django.contrib.auth.views import LoginView
 from django.http import HttpResponse, JsonResponse, HttpResponseNotFound
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
-from django.utils.safestring import mark_safe
+from django.core.paginator import Paginator
 from django.views.generic import CreateView, UpdateView
 from django_celery_beat.models import *
 import json
@@ -51,7 +51,11 @@ def create_book(request):
             for el in posts:
                 if first_day <= el.date <= last_day:
                     list_post.append(el)                        # Список записей которые мы выводим в соответствии с временным диапазоном
-                posts = list_post
+
+        len_post = len(list_post)
+        paginator = Paginator(posts, len_post)                  # Показывает все записи на текущий месяца
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
 
         if request.method == 'POST':
             form = PostForm(request.POST)
@@ -62,7 +66,12 @@ def create_book(request):
             except:
                 form.add_error(None, 'Неверные данные')         # Создается общая ошибка, если форма не связана с моделью и некорректна
 
-        context = {'title': 'Создать запись на маникюр', 'title_body': 'Создать запись на маникюр', 'form': form, 'posts': posts}
+        context = {'title': 'Создать запись на маникюр',
+                   'title_body': 'Создать запись на маникюр',
+                   'form': form, 'posts': posts,
+                   'page_obj': page_obj,
+                   'paginator': paginator,
+                   }
 
         return render(request, 'main/create_book.html', context)
 
@@ -110,15 +119,15 @@ def is_active(request, pk):
 
 
 def not_active(request, pk):
-    if not request.user.is_staff:
-        return redirect('home')
-    else:
+    post = Post.objects.get(pk=pk)
+    user = request.user
 
-        post = Post.objects.get(pk=pk)
+    if user.is_staff:
         if post.client:
             order_canceled.delay(pk)
-            task = PeriodicTask.objects.get(name='{}-{}'.format(post.title, post.id))
-            task.delete()
+            task = PeriodicTask.objects.filter(name='{}-{}'.format(post.title, post.id))
+            if task.exists():
+                task[0].delete()
         post.is_active = False
         post.client = None
         post.service = None
@@ -126,42 +135,110 @@ def not_active(request, pk):
 
         return redirect('create_book')
 
+    elif post.client == user:
+        order_canceled.delay(pk)
+        task = PeriodicTask.objects.filter(name='{}-{}'.format(post.title, post.id))
+        if task.exists():
+            task[0].delete()
+
+        post.client = None
+        post.service = None
+        post.save()
+        return redirect('my_book')
+    else:
+        return redirect('home')
+
 
 def book_manicure(request):
     if not request.user.is_authenticated:
         return redirect('log_in')
     else:
 
+        posts = Post.objects.filter(client=None, is_active=True)
         user = request.user
         post = Post.objects.filter(client=user)
-        if post:
-            today = post[0].date + timedelta(days=5)    # Если у пользователя есть текущая запись, то он не сможет сделать запись на следующие 5 дней с даты записи
-        else:
+        n = 3                                                          # количество неактивных дней за и после записи
+        if post:                                                       # Условие если у текущего пользователя есть записи
+            no_access_time = []
+            for el in post:
+                if el.date > datetime.date(datetime.now()):
+                    today_in = el.date - timedelta(days=n)
+                    today_end = el.date + timedelta(days=n)            # Если у пользователя есть запись, то он не сможет сделать запись за и после n дней с даты записи
+                    print(today_in, today_end)
+                    date = el.date - timedelta(days=n+1)
+                    for i in range(n*2+1):
+                        date = date + timedelta(days=1)
+                        if today_in <= date <= today_end:
+                            no_access_time.append(str(date))
+                    no_access_time = set(no_access_time)
+                    no_access_time = list(no_access_time)
             today = datetime.date(datetime.now())
+            access_time = []
+            for el in posts:
+                if el.date >= today:
+                    access_time.append(str(el.date))
+                    access_time = set(access_time)
+                    access_time = list(access_time)
+            access = set(access_time) - set(no_access_time)
+            access = list(access)
+        else:                                                       # Условие если у текущего пользователя нет записей
+            access_time = []
+            today = datetime.date(datetime.now())
+            for el in posts:
+                if el.date >= today:
+                    access_time.append(str(el.date))
+            access_time = set(access_time)
+            access_time = list(access_time)
+            access = access_time                                    # Список дат которые отдаются на календарь как доступные даты
 
-        access_time = []
-        posts = Post.objects.filter(client=None, is_active=True)
-        for el in posts:
-            if el.date >= today:
-                access_time.append(str(el.date))
-        access_time = set(access_time)
-        access_time = list(access_time)                 # Список дат которые отдаются на календарь как доступные даты
-
-        context = {'title': 'Запись на ногти', 'title_body': 'Запись на ногти', 'access_time': access_time}
+        context = {'title': 'Запись на ногти', 'title_body': 'Запись на ногти', 'access_time': access, 'n': n,}
 
         return render(request, 'main/book_manicure.html', context)
 
 
 def confirm_book(request, pk):
-    post = Post.objects.get(id=pk)
+    select_post = Post.objects.get(pk=pk)
 
     user = request.user
-    post_client = Post.objects.filter(client=user)
-    if post_client:
-        today = post_client[0].date + timedelta(days=5)
-    else:
+    posts = Post.objects.filter(client=None, is_active=True)
+    post = Post.objects.filter(client=user)
+    n = 3                                                   # количество неактивных дней за и после записи
+    if post:                                                # Условие если у текущего пользователя есть записи
+        no_access_time = []
+        for el in post:
+            if el.date > datetime.date(datetime.now()):
+                today_in = el.date - timedelta(days=n)
+                today_end = el.date + timedelta(days=n)     # Если у пользователя есть запись, то он не сможет сделать запись за и после n дней с даты записи
+                date = el.date - timedelta(days=n+1)
+                for i in range(n*2+1):
+                    date = date + timedelta(days=1)
+                    if today_in <= date <= today_end:
+                        no_access_time.append(str(date))
+                no_access_time = set(no_access_time)
+                no_access_time = list(no_access_time)
         today = datetime.date(datetime.now())
-    if post.client or post.date < today:
+        access_time = []
+        for el in posts:
+            if el.date >= today:
+                access_time.append(str(el.date))
+        access_time = set(access_time)
+        access_time = list(access_time)
+        access = set(access_time) - set(no_access_time)
+    else:                                                   # Условие если у текущего пользователя нет записей
+        access_time = []
+        today = datetime.date(datetime.now())
+        for el in posts:
+            if el.date >= today:
+                access_time.append(str(el.date))
+                access_time = set(access_time)
+                access_time = list(access_time)             # Список дат которые отдаются на календарь как доступные даты
+        access = access_time
+
+    i = 0
+    for dt in access:
+        if str(select_post.date) == dt and not select_post.client and select_post.date != datetime.date(datetime.now()):
+            i += 1
+    if i != 1:
         return HttpResponseNotFound('<h1>Page not found</h1>')
 
     if not request.user.is_authenticated:
@@ -173,17 +250,17 @@ def confirm_book(request, pk):
             form = PostUserForm(request.POST)
             try:
                 service_id = request.POST['service']
-                post.client = request.user
-                post.service = Service.objects.get(id=service_id)
-                post.save()
+                select_post.client = request.user
+                select_post.service = Service.objects.get(id=service_id)
+                select_post.save()
                 # order_created.delay(post.id)
                 today = datetime.now()
                 PeriodicTask.objects.create(
-                    name='{}-{}'.format(post.title, post.id),
+                    name='{}-{}'.format(select_post.title, select_post.id),
                     task='order_created',
                     # crontab=CrontabSchedule.objects.create(minute=today.minute+1, hour=today.hour),   # day_of_week=today.day, day_of_month=today.month, day_of_year=today.year
                     interval=IntervalSchedule.objects.get(every=5, period='seconds'),
-                    args=json.dumps([post.id]),
+                    args=json.dumps([select_post.id]),
                     start_time=today,
                     one_off=True,
                 )
@@ -195,9 +272,28 @@ def confirm_book(request, pk):
             'title': 'Подтверждение',
             'title_body': 'Подтверждение записи',
             'form': form,
-            'el': post,
+            'el': select_post,
         }
         return render(request, 'main/confirm_book.html', context)
+
+
+def my_book(request):
+    if not request.user.is_authenticated:
+        return redirect('log_in')
+    else:
+        user = request.user
+        posts = Post.objects.filter(client=user)
+        book = ''
+        if len(posts) == 0:
+            book = '1'                              # Если записей нет то выводим текст записей нет
+
+        context = {
+            'title': 'Мои записи',
+            'title_body': 'Мои текущие записи',
+            'books': posts,
+            'book': book,
+        }
+        return render(request, 'main/index.html', context)
 
 
 def user_detail(request, pk):
@@ -277,6 +373,15 @@ class LoginUser(LoginView):
             context['title'] = 'Вход в систему'
             context['title_body'] = 'Вход в систему'
             return context
+
+
+def certificates(request):
+    context = {
+        'certificates': 'hello',
+        'title': 'Сертификаты',
+        'title_body': 'Сертификаты',
+    }
+    return render(request, 'main/index.html', context)
 
 
 def answer_ajax(request):

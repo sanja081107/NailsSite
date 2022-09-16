@@ -33,6 +33,12 @@ $.datepicker.setDefaults($.datepicker.regional['ru']);
 
 <div id="datepicker"></div>
 <input type="hidden" id="datepicker_value"><br>
+<div id="display"></div>
+<div class=" alert alert-primary" role="alert">
+    Обращаем ваше внимание, после создания записи,
+    Вы не сможете создать новую запись за и после {{ n }} дней со дня записи! Организовывайте ваше время правильно!
+    Спасибо.
+</div>
 
 
 <script>
@@ -47,9 +53,6 @@ $(function(){
 	});
 });
 </script>
-
-
-<div id="display"></div>
 
 
 <script>

@@ -132,12 +132,12 @@
 
   <div class="nav-scroller py-1 mb-2">
     <nav class="nav d-flex justify-content-between">
-      <a class="p-2 link-secondary" href="{% url 'home' %}">Главная страница</a>
-      <a class="p-2 link-secondary" href="{% url 'book_manicure' %}">Записаться на ногти</a>
+      <a class="p-2 link-secondary" href="{% url 'home' %}">Главная</a>
+      <a class="p-2 link-secondary" href="{% url 'book_manicure' %}">Записаться</a>
       <a class="p-2 link-secondary" href="{% url 'my_book' %}">Мои записи</a>
       {% if request.user.is_staff %}<a class="p-2 link-secondary" href="{% url 'create_book' %}">Редактор записи*</a>{% endif %}
       {% if request.user.is_staff %}<a class="p-2 link-secondary" href="{% url 'all_users' %}">Пользователи*</a>{% endif %}
-      {% if request.user.is_staff %}<a class="p-2 link-secondary" href="{% url 'all_users' %}">Статистика*</a>{% endif %}
+      {% if request.user.is_staff %}<a class="p-2 link-secondary" href="{% url 'statistics' %}">Статистика*</a>{% endif %}
       <a class="p-2 link-secondary" href="#">Работы мастера</a>
       <a class="p-2 link-secondary" href="{% url 'certificates' %}">Сертификаты</a>
       <a class="p-2 link-secondary" href="#">Контакты</a>

@@ -37,7 +37,6 @@ def create_book(request):
     else:
         form = PostForm()
 
-        list_post = []
         today = datetime.date(datetime.now())
         year = today.year
         month = today.month
@@ -46,14 +45,20 @@ def create_book(request):
         first_day = today - timedelta(today.day-1)              # Первый день месяца
         last_day = first_day + timedelta(days_in_month-1)       # Последний день месяца
 
+        list_post = []
         posts = Post.objects.all().order_by('date')
         if posts:
             for el in posts:
                 if first_day <= el.date <= last_day:
-                    list_post.append(el)                        # Список записей которые мы выводим в соответствии с временным диапазоном
+                    list_post.append(el)
+            len_post = len(list_post)                           # Список записей которые мы выводим в соответствии с текущим месяцем
+            middle = int(len_post/2)
+            list_post = []
+            for el in posts:
+                if el.date >= first_day:
+                    list_post.append(el)
 
-        len_post = len(list_post)
-        paginator = Paginator(posts, len_post)                  # Показывает все записи на текущий месяца
+        paginator = Paginator(list_post, len_post)              # Показывает все записи на текущий месяца
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 
@@ -68,7 +73,9 @@ def create_book(request):
 
         context = {'title': 'Создать запись на маникюр',
                    'title_body': 'Создать запись на маникюр',
-                   'form': form, 'posts': posts,
+                   'form': form,
+                   'before_middle': f":{middle}",
+                   'after_middle': f"{middle}:",
                    'page_obj': page_obj,
                    'paginator': paginator,
                    }
@@ -102,8 +109,16 @@ def all_users(request):
         return redirect('home')
     else:
         users = CustomUser.objects.all()
-        context = {'title': 'Все пользователи', 'title_body': 'Все пользователи',
-                   'users': users}
+        paginator = Paginator(users, 10)              # Показывает все записи на текущий месяца
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        context = {
+            'title': 'Все пользователи',
+            'title_body': 'Все пользователи',
+            'users': 'yes',
+            'page_obj': page_obj,
+            'paginator': paginator,
+        }
 
         return render(request, 'main/index.html', context)
 
@@ -219,7 +234,7 @@ def confirm_book(request, pk):
         today = datetime.date(datetime.now())
         access_time = []
         for el in posts:
-            if el.date >= today:
+            if el.date > today:                             # отсчет идет с завтрашнего дня, если с сегодняшнего то исп. >=
                 access_time.append(str(el.date))
         access_time = set(access_time)
         access_time = list(access_time)
@@ -228,15 +243,15 @@ def confirm_book(request, pk):
         access_time = []
         today = datetime.date(datetime.now())
         for el in posts:
-            if el.date >= today:
+            if el.date > today:                             # отсчет идет с завтрашнего дня, если с сегодняшнего то исп. >=
                 access_time.append(str(el.date))
                 access_time = set(access_time)
-                access_time = list(access_time)             # Список дат которые отдаются на календарь как доступные даты
-        access = access_time
+                access_time = list(access_time)
+        access = access_time                                # Список дат которые отдаются на календарь как доступные даты
 
     i = 0
     for dt in access:
-        if str(select_post.date) == dt and not select_post.client and select_post.date != datetime.date(datetime.now()):
+        if str(select_post.date) == dt and not select_post.client:
             i += 1
     if i != 1:
         return HttpResponseNotFound('<h1>Page not found</h1>')
@@ -277,21 +292,46 @@ def confirm_book(request, pk):
         return render(request, 'main/confirm_book.html', context)
 
 
+def statistics(request):
+    context = {
+        'title': 'Статистика',
+        'title_body': 'Статистика записей',
+    }
+    return render(request, 'main/index.html', context)
+
+
 def my_book(request):
     if not request.user.is_authenticated:
         return redirect('log_in')
     else:
         user = request.user
-        posts = Post.objects.filter(client=user)
+        posts = Post.objects.filter(client=user).order_by('date')
+        today = datetime.date(datetime.now())
         book = ''
-        if len(posts) == 0:
-            book = '1'                              # Если записей нет то выводим текст записей нет
+        old_book = ''
+
+        books = []
+        for el in posts:
+            if el.date >= today:
+                books.append(el)
+        if len(books) == 0:
+            book = '0'                              # Если записей нет то выводим текст записей нет
+
+        old_books = []
+        for el in posts:
+            if el.date <= today:
+                old_books.append(el)
+        if len(old_books) == 0:
+            old_book = '0'
 
         context = {
             'title': 'Мои записи',
-            'title_body': 'Мои текущие записи',
-            'books': posts,
+            'title_body': 'Мои записи',
+            'books_page': 'yes',
+            'books': books,
             'book': book,
+            'old_books': old_books,
+            'old_book': old_book,
         }
         return render(request, 'main/index.html', context)
 
@@ -302,7 +342,8 @@ def user_detail(request, pk):
 
     user = CustomUser.objects.get(pk=pk)
     if not request.user.is_staff and request.user != user:
-        return redirect('home')
+        context = {'error': 'error'}
+        return render(request, 'main/registration.html', context)
     else:
         context = {
             'el': user,
@@ -341,7 +382,8 @@ class UserUpdateView(UpdateView):
     def get_context_data(self, **kwargs):
         user = CustomUser.objects.get(pk=self.kwargs['pk'])
         if not self.request.user == user and not self.request.user.is_staff:
-            return reverse_lazy('home')
+            context = {'error': 'error!'}
+            return context
         else:
             context = super().get_context_data(**kwargs)
             context['title'] = 'Обновление данных'
@@ -377,7 +419,7 @@ class LoginUser(LoginView):
 
 def certificates(request):
     context = {
-        'certificates': 'hello',
+        'certificates': 'yes',
         'title': 'Сертификаты',
         'title_body': 'Сертификаты',
     }

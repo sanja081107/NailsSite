@@ -1,16 +1,18 @@
 {% extends 'main/base.html' %}
 
 {% block body %}
-
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    <div class="add-post">
-        {% for el in form %}
-        <p><label for="{{el.id_for_label}}">{{ el.label }}:</label> {{ el }}</p>
-        <div class="form-error"> {{ el.errors }}</div>   <!-- Выдается ошибка по отдельному полю формы -->
-        {% endfor %}
-    </div>
-    <button class="btn btn-outline-primary" type="submit">Сохранить</button>
-</form>
-
+{% if not error %}
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="add-post">
+            {% for el in form %}
+            <p><label for="{{el.id_for_label}}">{{ el.label }}:</label> {{ el }}</p>
+            <div class="form-error"> {{ el.errors }}</div>   <!-- Выдается ошибка по отдельному полю формы -->
+            {% endfor %}
+        </div>
+        <button class="btn btn-outline-primary" type="submit">Сохранить</button>
+    </form>
+{% else %}
+    <h4 class="mb-4 fst-italic">Ошибка доступа</h4>
+{% endif %}
 {% endblock %}

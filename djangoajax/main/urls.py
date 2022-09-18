@@ -15,6 +15,7 @@ urlpatterns = [
     path('is_active_<int:pk>/', is_active, name='is_active'),
     path('not_active_<int:pk>/', not_active, name='not_active'),
     path('certificates/', certificates, name='certificates'),
+    path('statistics/', statistics, name='statistics'),
     path('get_answer_ajax/', answer_ajax, name='answer_ajax'),
 
     path('registration/', RegisterUser.as_view(), name='registration'),

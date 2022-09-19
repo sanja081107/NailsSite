@@ -19,7 +19,7 @@
 
 
 {% if page_obj %}
-    <h4 class="mb-4 fst-italic">Все записи за месяц: </h4>
+    <h4 class="mb-4 fst-italic">{{ page_obj_title }}</h4><br>
     <div class="row">
         <div class="col-sm">
             {% for el in page_obj|slice:before_middle %}

@@ -1,6 +1,7 @@
 {% extends 'main/base.html' %}
 
 {% block body %}
+
 {% if not error %}
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
@@ -12,7 +13,9 @@
         </div>
         <button class="btn btn-outline-primary" type="submit">Сохранить</button>
     </form>
+
 {% else %}
     <h4 class="mb-4 fst-italic">Ошибка доступа</h4>
 {% endif %}
+
 {% endblock %}

@@ -5,6 +5,7 @@
 <!--подключение скриптов и стилей bootstrap для карусели-->
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha2/css/bootstrap.min.css" integrity="sha384-DhY6onE6f3zzKbjUPRc2hOzGAdEf4/Dz+WJwBvEYL/lkkIsI3ihufq9hk9K4lVoK" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
 
 <!--для страницы Главная-->
 {{ cont }}
@@ -105,7 +106,7 @@
         <div class="col-sm">
             <div class="mb-4 pb-4 col-10 border-bottom">
                 <h4 class="mb-4 fst-italic">Старые записи: </h4>
-                <h6 class="mb-4 fst-italic">У Вас нет старых записей</h6>
+                <h6 class="mb-4 fst-italic">Нет старых записей</h6>
             </div>
         </div>
     {% endif %}
@@ -140,6 +141,102 @@
                 <span class="carousel-control-next-icon" aria-hidden="true"></span>
                 <span class="sr-only">Next</span>
           </a>
+    </div>
+{% endif %}
+
+
+<!--для страницы Статистика-->
+{% if statistic %}
+    <div id="accordion">
+
+      <div class="card">
+        <div class="card-header" id="headingOne">
+          <h5 class="mb-0">
+            <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+              1. Актуальный доход за текущий месяц по сегодня
+            </button>
+          </h5>
+        </div>
+        <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
+          <div class="card-body">
+              {% if list_for_this_month_to_now %}
+                {% for el in list_for_this_month_to_now %}
+                    {{ el.date }} - {{ el.service.price }} p &nbsp;{{ el.client.first_name }} {{ el.client.last_name }}<br>
+                {% endfor %}<br>
+                Итог: {{ current_profit_for_this_month_to_now }} p.
+              {% else %}
+                У Вас не было записей
+              {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header" id="headingTwo">
+          <h5 class="mb-0">
+            <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+              2. Ожидаемый доход за оставшиеся дни текущего месяца
+            </button>
+          </h5>
+        </div>
+        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+          <div class="card-body">
+              {% if list_for_this_remaining_month %}
+                {% for el in list_for_this_remaining_month %}
+                    {{ el.date }} - {{ el.service.price }} p &nbsp;{{ el.client.first_name }} {{ el.client.last_name }}<br>
+                {% endfor %}<br>
+                Итог: {{ expected_profit_for_this_remaining_month }} p.
+              {% else %}
+                У Вас нет записей на оставшийся месяц
+              {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header" id="headingThree">
+          <h5 class="mb-0">
+            <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+               3. Актуальный доход за все время по сегодняшний день
+            </button>
+          </h5>
+        </div>
+        <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
+          <div class="card-body">
+              {% if list_to_now %}
+                {% for el in list_to_now %}
+                    {{ el.date }} - {{ el.service.price }} p &nbsp;{{ el.client.first_name }} {{ el.client.last_name }}<br>
+                {% endfor %}<br>
+                Итог: {{ current_profit_to_now }} p.
+              {% else %}
+                У Вас еще не было записей
+              {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header" id="headingFour">
+          <h5 class="mb-0">
+            <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+              4. Ожидаемый доход за все последующие месяца
+            </button>
+          </h5>
+        </div>
+        <div id="collapseFour" class="collapse" aria-labelledby="headingFour" data-parent="#accordion">
+          <div class="card-body">
+              {% if list_for_all_other_months %}
+                {% for el in list_for_all_other_months %}
+                    {{ el.date }} - {{ el.service.price }} p &nbsp;{{ el.client.first_name }} {{ el.client.last_name }}<br>
+                {% endfor %}<br>
+                Итог: {{ expected_profit_for_all_next_months }} p.
+              {% else %}
+                У Вас нет записей на другие месяца
+              {% endif %}
+          </div>
+        </div>
+      </div>
+        <br><p>Предпологаемый доход за этот месяц: {{ current_profit_for_this_month_to_now|add:expected_profit_for_this_remaining_month }} p.</p>
     </div>
 {% endif %}
 

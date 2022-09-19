@@ -36,7 +36,7 @@ class PostEditForm(ModelForm):
         }
 
 
-class PostUserForm(ModelForm):
+class PostServiceForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['service'].empty_label = 'Все услуги'
@@ -80,7 +80,7 @@ class UpdateUserForm(ModelForm):
     birthday = forms.DateTimeField(label='День рождения (не обязательно)', required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'type': 'date'}))
     first_name = forms.CharField(label='Имя', required=True, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Введите ваше имя'}))
     last_name = forms.CharField(label='Фамилия', required=True, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Введите вашу фамилию'}))
-    photo = forms.ImageField(label='Ваше фото (не обязательно)', required=False, widget=forms.FileInput(attrs={'type': 'file', 'accept': 'image/*'}))
+    photo = forms.ImageField(label='Ваше фото (не обязательно)', required=False, widget=forms.ClearableFileInput(attrs={'class': 'form-control', 'type': 'file', 'accept': 'image/*'}))
     email = forms.CharField(label='Электронная почта', required=True, widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Введите электронную почту'}))
     mobile = forms.IntegerField(label='Номер телефона', required=True, widget=forms.TextInput(attrs={"type": "number", 'class': 'form-control', 'placeholder': 'Пример: 375331234567'}))
     instagram = forms.CharField(label='Имя в инстаграм', required=True, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Введите ваше имя в инстаграм'}))

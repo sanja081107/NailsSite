@@ -61,6 +61,10 @@ def create_book(request):
         paginator = Paginator(list_post, len_post)              # Показывает все записи на текущий месяца
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
+        if page_number == '1' or not page_number:
+            page_obj_title = 'Записи за текущий месяц:'
+        else:
+            page_obj_title = 'Записи за последующие месяца:'
 
         if request.method == 'POST':
             form = PostForm(request.POST)
@@ -73,6 +77,7 @@ def create_book(request):
 
         context = {'title': 'Создать запись на маникюр',
                    'title_body': 'Создать запись на маникюр',
+                   'page_obj_title': page_obj_title,
                    'form': form,
                    'before_middle': f":{middle}",
                    'after_middle': f"{middle}:",
@@ -83,25 +88,23 @@ def create_book(request):
         return render(request, 'main/create_book.html', context)
 
 
-class EditBookView(PermissionRequiredMixin, UpdateView):
+class EditBookView(UpdateView):
     model = Post
     form_class = PostEditForm
     template_name = 'main/edit_book.html'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['title'] = 'Изменение записи'
-        context['title_body'] = 'Изменение записи'
-        return context
+        if not self.request.user.is_staff:
+            context = {'error': 'error!'}
+            return context
+        else:
+            context = super().get_context_data(**kwargs)
+            context['title'] = 'Изменение записи'
+            context['title_body'] = 'Изменение записи'
+            return context
 
     def get_success_url(self):
         return reverse_lazy('create_book')
-
-    def get_permission_required(self):
-        if not self.request.user.is_staff:
-            return True
-        else:
-            return redirect('home')
 
 
 def all_users(request):
@@ -185,15 +188,15 @@ def book_manicure(request):
                         date = date + timedelta(days=1)
                         if today_in <= date <= today_end:
                             no_access_time.append(str(date))
-                    no_access_time = set(no_access_time)
-                    no_access_time = list(no_access_time)
+            no_access_time = set(no_access_time)
+            no_access_time = list(no_access_time)
             today = datetime.date(datetime.now())
             access_time = []
             for el in posts:
                 if el.date >= today:
                     access_time.append(str(el.date))
-                    access_time = set(access_time)
-                    access_time = list(access_time)
+            access_time = set(access_time)
+            access_time = list(access_time)
             access = set(access_time) - set(no_access_time)
             access = list(access)
         else:                                                       # Условие если у текущего пользователя нет записей
@@ -206,63 +209,63 @@ def book_manicure(request):
             access_time = list(access_time)
             access = access_time                                    # Список дат которые отдаются на календарь как доступные даты
 
-        context = {'title': 'Запись на ногти', 'title_body': 'Запись на ногти', 'access_time': access, 'n': n,}
+        context = {'title': 'Запись на ногти', 'title_body': 'Запись на ногти', 'access_time': access, 'n': n}
 
         return render(request, 'main/book_manicure.html', context)
 
 
 def confirm_book(request, pk):
-    select_post = Post.objects.get(pk=pk)
-
-    user = request.user
-    posts = Post.objects.filter(client=None, is_active=True)
-    post = Post.objects.filter(client=user)
-    n = 3                                                   # количество неактивных дней за и после записи
-    if post:                                                # Условие если у текущего пользователя есть записи
-        no_access_time = []
-        for el in post:
-            if el.date > datetime.date(datetime.now()):
-                today_in = el.date - timedelta(days=n)
-                today_end = el.date + timedelta(days=n)     # Если у пользователя есть запись, то он не сможет сделать запись за и после n дней с даты записи
-                date = el.date - timedelta(days=n+1)
-                for i in range(n*2+1):
-                    date = date + timedelta(days=1)
-                    if today_in <= date <= today_end:
-                        no_access_time.append(str(date))
-                no_access_time = set(no_access_time)
-                no_access_time = list(no_access_time)
-        today = datetime.date(datetime.now())
-        access_time = []
-        for el in posts:
-            if el.date > today:                             # отсчет идет с завтрашнего дня, если с сегодняшнего то исп. >=
-                access_time.append(str(el.date))
-        access_time = set(access_time)
-        access_time = list(access_time)
-        access = set(access_time) - set(no_access_time)
-    else:                                                   # Условие если у текущего пользователя нет записей
-        access_time = []
-        today = datetime.date(datetime.now())
-        for el in posts:
-            if el.date > today:                             # отсчет идет с завтрашнего дня, если с сегодняшнего то исп. >=
-                access_time.append(str(el.date))
-                access_time = set(access_time)
-                access_time = list(access_time)
-        access = access_time                                # Список дат которые отдаются на календарь как доступные даты
-
-    i = 0
-    for dt in access:
-        if str(select_post.date) == dt and not select_post.client:
-            i += 1
-    if i != 1:
-        return HttpResponseNotFound('<h1>Page not found</h1>')
 
     if not request.user.is_authenticated:
         return redirect('log_in')
     else:
+        select_post = Post.objects.get(pk=pk)
 
-        form = PostUserForm()
+        user = request.user
+        posts = Post.objects.filter(client=None, is_active=True)
+        post = Post.objects.filter(client=user)
+        n = 3                                                   # количество неактивных дней за и после записи
+        if post:                                                # Условие если у текущего пользователя есть записи
+            no_access_time = []
+            for el in post:
+                if el.date > datetime.date(datetime.now()):
+                    today_in = el.date - timedelta(days=n)
+                    today_end = el.date + timedelta(days=n)     # Если у пользователя есть запись, то он не сможет сделать запись за и после n дней с даты записи
+                    date = el.date - timedelta(days=n+1)
+                    for i in range(n*2+1):
+                        date = date + timedelta(days=1)
+                        if today_in <= date <= today_end:
+                            no_access_time.append(str(date))
+            no_access_time = set(no_access_time)
+            no_access_time = list(no_access_time)
+            today = datetime.date(datetime.now())
+            access_time = []
+            for el in posts:
+                if el.date > today:                             # отсчет идет с завтрашнего дня, если с сегодняшнего то исп. >=
+                    access_time.append(str(el.date))
+            access_time = set(access_time)
+            access_time = list(access_time)
+            access = set(access_time) - set(no_access_time)
+        else:                                                   # Условие если у текущего пользователя нет записей
+            access_time = []
+            today = datetime.date(datetime.now())
+            for el in posts:
+                if el.date > today:                             # отсчет идет с завтрашнего дня, если с сегодняшнего то исп. >=
+                    access_time.append(str(el.date))
+            access_time = set(access_time)
+            access_time = list(access_time)
+            access = access_time                                # Список дат которые отдаются на календарь как доступные даты
+
+        i = 0
+        for dt in access:
+            if str(select_post.date) == dt and not select_post.client:
+                i += 1
+        if i != 1:
+            return HttpResponseNotFound('<h1>Page not found</h1>')
+
+        form = PostServiceForm()
         if request.method == 'POST':
-            form = PostUserForm(request.POST)
+            form = PostServiceForm(request.POST)
             try:
                 service_id = request.POST['service']
                 select_post.client = request.user
@@ -282,22 +285,90 @@ def confirm_book(request, pk):
                 return redirect('home')
             except:
                 form.add_error(None, 'Нужно выбрать услугу')  # Создается общая ошибка, если форма не связана с моделью и некорректна
-
+        time = select_post.title.split()
         context = {
             'title': 'Подтверждение',
             'title_body': 'Подтверждение записи',
             'form': form,
             'el': select_post,
+            'time': time[1],
         }
         return render(request, 'main/confirm_book.html', context)
 
 
-def statistics(request):
-    context = {
-        'title': 'Статистика',
-        'title_body': 'Статистика записей',
-    }
-    return render(request, 'main/index.html', context)
+def statistic(request):
+    if not request.user.is_staff:
+        return redirect('home')
+    else:
+        today = datetime.date(datetime.now())
+        year = today.year
+        month = today.month
+        days_in_month = calendar.monthrange(year, month)[1]
+
+        first_day = today - timedelta(today.day-1)              # Первый день месяца
+        last_day = first_day + timedelta(days_in_month-1)       # Последний день месяца
+
+        posts_all = Post.objects.all().order_by('date')
+        posts_clients = []
+        for el in posts_all:
+            if el.client:
+                posts_clients.append(el)                        # Список записей где есть клиент
+
+        current_profit_for_this_month_to_now = [0]
+        expected_profit_for_this_remaining_month = [0]
+        current_profit_to_now = [0]
+        expected_profit_for_all_next_months = [0]
+
+        list_for_this_month_to_now = []
+        list_for_this_remaining_month = []
+        list_to_now = []
+        list_for_all_other_months = []
+
+        if posts_clients:
+            for el in posts_clients:
+                if first_day <= el.date <= today:
+                    list_for_this_month_to_now.append(el)
+                    current_profit_for_this_month_to_now.append(el.service.price)
+
+            for el in posts_clients:
+                if today < el.date <= last_day:
+                    list_for_this_remaining_month.append(el)
+                    expected_profit_for_this_remaining_month.append(el.service.price)
+
+            for el in posts_clients:
+                if el.date <= today:
+                    list_to_now.append(el)
+                    current_profit_to_now.append(el.service.price)
+
+            for el in posts_clients:
+                if el.date > last_day:
+                    list_for_all_other_months.append(el)
+                    expected_profit_for_all_next_months.append(el.service.price)
+
+        current_profit_for_this_month_to_now = sum(current_profit_for_this_month_to_now)
+        expected_profit_for_this_remaining_month = sum(expected_profit_for_this_remaining_month)
+        current_profit_to_now = sum(current_profit_to_now)
+        expected_profit_for_all_next_months = sum(expected_profit_for_all_next_months)
+
+        context = {
+            'title': 'Статистика',
+            'title_body': 'Статистика записей',
+            'statistic': 'yes',
+
+            'list_for_this_month_to_now': list_for_this_month_to_now,
+            'current_profit_for_this_month_to_now': current_profit_for_this_month_to_now,
+
+            'list_for_this_remaining_month': list_for_this_remaining_month,
+            'expected_profit_for_this_remaining_month': expected_profit_for_this_remaining_month,
+
+            'list_to_now': list_to_now,
+            'current_profit_to_now': current_profit_to_now,
+
+            'list_for_all_other_months': list_for_all_other_months,
+            'expected_profit_for_all_next_months': expected_profit_for_all_next_months,
+
+        }
+        return render(request, 'main/index.html', context)
 
 
 def my_book(request):

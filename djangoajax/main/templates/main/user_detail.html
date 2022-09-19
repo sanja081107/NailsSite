@@ -1,64 +1,69 @@
 {% extends 'main/base.html' %}
+{% load static %}
 
 {% block body %}
 
-<div>
+<div class="row">
 
-    {% if el.photo %}
-        <img id="photo" src="{{ el.photo.url }}" width="22%">
-    {% endif %}
+    <div class="col-sm">
+        {% if el.photo %}
+            <img id="photo" src="{{ el.photo.url }}" width="70%">
+        {% else %}
+            <img src="{% static 'main/img/no-photo.png' %}" width="70%">
+        {% endif %}
+    </div>
 
-
-    {% if el.first_name %}
-        <p><h4>Имя:</h4> {{ el.first_name }}</p>
-    {% else %}
-        <p><h4>Имя:</h4> Не заполнено</p>
-    {% endif %}
-
-
-    {% if el.last_name %}
-        <p><h4>Фамилия:</h4> {{ el.last_name }}</p>
-    {% else %}
-        <p><h4>Фамилия:</h4> Не заполнено</p>
-    {% endif %}
+    <div class="col-sm">
+        {% if el.first_name %}
+            <p><h4>Имя:</h4> {{ el.first_name }}</p>
+        {% else %}
+            <p><h4>Имя:</h4> Не заполнено</p>
+        {% endif %}
 
 
-    {% if el.birthday %}
-        <p><h4>День рождения:</h4> {{ el.birthday }}</p>
-    {% else %}
-        <p><h4>День рождения:</h4> Не заполнено</p>
-    {% endif %}
+        {% if el.last_name %}
+            <p><h4>Фамилия:</h4> {{ el.last_name }}</p>
+        {% else %}
+            <p><h4>Фамилия:</h4> Не заполнено</p>
+        {% endif %}
 
 
-    {% if el.email %}
-        <p><h4>Почта:</h4> {{ el.email }}</p>
-    {% else %}
-        <p><h4>Почта:</h4> Не заполнено</p>
-    {% endif %}
+        {% if el.birthday %}
+            <p><h4>День рождения:</h4> {{ el.birthday }}</p>
+        {% else %}
+            <p><h4>День рождения:</h4> Не заполнено</p>
+        {% endif %}
 
 
-    {% if el.mobile %}
-        <p><h4>Телефон:</h4> +{{ el.mobile }}</p>
-    {% else %}
-        <p><h4>Телефон:</h4> Не заполнено</p>
-    {% endif %}
+        {% if el.email %}
+            <p><h4>Почта:</h4> {{ el.email }}</p>
+        {% else %}
+            <p><h4>Почта:</h4> Не заполнено</p>
+        {% endif %}
 
 
-    {% if el.instagram %}
-        <p><h4>Инстаграм:</h4> <a href="https://www.instagram.com/{{ el.instagram }}/">{{ el.instagram }}</a></p>
-    {% else %}
-        <p><h4>Инстаграм:</h4> Не заполнено</p>
-    {% endif %}
+        {% if el.mobile %}
+            <p><h4>Телефон:</h4> +{{ el.mobile }}</p>
+        {% else %}
+            <p><h4>Телефон:</h4> Не заполнено</p>
+        {% endif %}
 
 
-    {% if request.user == el %}
-        <a class="btn btn-outline-primary" href="{% url 'user_edit' el.pk %}">Изменить данные</a>
-    {% endif %}
+        {% if el.instagram %}
+            <p><h4>Инстаграм:</h4> <a href="https://www.instagram.com/{{ el.instagram }}/">{{ el.instagram }}</a></p>
+        {% else %}
+            <p><h4>Инстаграм:</h4> Не заполнено</p>
+        {% endif %}
 
-    {% if request.user == el %}
-        <a class="btn btn-outline-primary" href="{% url 'change_password' %}">Изменить пароль</a>
-    {% endif %}
 
+        {% if request.user == el %}
+            <a class="btn btn-outline-primary" href="{% url 'user_edit' el.pk %}">Изменить данные</a>
+        {% endif %}
+
+        {% if request.user == el %}
+            <a class="btn btn-outline-primary" href="{% url 'change_password' %}">Изменить пароль</a>
+        {% endif %}
+    </div>
 </div>
 
 {% endblock %}

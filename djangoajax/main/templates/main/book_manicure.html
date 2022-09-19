@@ -2,10 +2,15 @@
 
 {% block body %}
 
+<!--подключение скриптов и стилей bootstrap для уведомления-->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha2/css/bootstrap.min.css" integrity="sha384-DhY6onE6f3zzKbjUPRc2hOzGAdEf4/Dz+WJwBvEYL/lkkIsI3ihufq9hk9K4lVoK" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+
+<!--подключение скриптов для календаря-->
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-
 <script>
 /* Локализация datepicker */
 $.datepicker.regional['ru'] = {
@@ -31,13 +36,20 @@ $.datepicker.setDefaults($.datepicker.regional['ru']);
 
 <p>Выберите доступный день:</p>
 
+<!--Отображение календаря-->
 <div id="datepicker"></div>
 <input type="hidden" id="datepicker_value"><br>
+
+<!--Отображение уведомления при удалении-->
 <div id="display"></div>
-<div class=" alert alert-primary" role="alert">
-    Обращаем ваше внимание, после создания записи,
-    Вы не сможете создать новую запись за и после {{ n }} дней со дня записи! Организовывайте ваше время правильно!
-    Спасибо.
+
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+  <strong>Обращаем ваше внимание!</strong> После создания записи,
+        Вы не сможете создать новую запись за и после {{ n }} дней со дня записи! Организовывайте ваше время правильно!
+        Спасибо за понимание.
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
 </div>
 
 
@@ -72,7 +84,7 @@ $(document).ready(function(){
                     $("#display").empty();
                     console.log(data);
 
-                    var title = "<p>Все доступное время:</p>"
+                    var title = "<p>Доступное время:</p>"
                     $("#display").append(title);
                     for (var key in data.posts)
                         {

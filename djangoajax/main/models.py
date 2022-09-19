@@ -24,6 +24,7 @@ class Post(models.Model):
 
 class Service(models.Model):
     title = models.CharField(max_length=255, verbose_name='Название', validators=[RegexValidator(regex=r'$', message='Model error')])
+    price = models.IntegerField(max_length=3, default=0, verbose_name='Цена в рублях')
 
     def __str__(self):
         return self.title

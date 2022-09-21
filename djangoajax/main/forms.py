@@ -51,6 +51,19 @@ class PostServiceForm(ModelForm):
         }
 
 
+class MyWorksCreateForm(ModelForm):
+    title = forms.CharField(label='Имя фото', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Например: photo 1'}))
+    photo = forms.ImageField(label='Фото работы', required=True, widget=forms.ClearableFileInput(attrs={'class': 'form-control', 'type': 'file', 'accept': 'image/*'}))
+    date = forms.DateTimeField(label='Дата создания фото', required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'type': 'date', 'value': datetime.date(datetime.now())}))
+
+    class Meta:
+        model = MyWorks
+        fields = ('title', 'photo', 'date', 'is_active')
+        widgets = {
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check'})
+        }
+
+
 class LoginUserForm(AuthenticationForm):
     username = forms.CharField(label='Логин', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Логин'}))
     password = forms.CharField(label='Пароль', widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Пароль'}))
@@ -64,7 +77,7 @@ class CustomUserCreationForm(UserCreationForm):
     birthday = forms.DateTimeField(label='День рождения (не обязательно)', required=False, widget=forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'date'}))
     first_name = forms.CharField(label='Имя', required=True, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Введите ваше имя'}))
     last_name = forms.CharField(label='Фамилия', required=True, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Введите вашу фамилию'}))
-    photo = forms.ImageField(label='Ваше фото (не обязательно)', required=False, widget=forms.FileInput(attrs={'type': 'file', 'accept': 'image/*'}))
+    photo = forms.ImageField(label='Ваше фото (не обязательно)', required=False, widget=forms.FileInput(attrs={'class': 'form-control', 'type': 'file', 'accept': 'image/*'}))
     password1 = forms.CharField(label='Пароль', widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Введите пароль'}))
     password2 = forms.CharField(label='Пароль повторно', widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Введите пароль повторно'}))
     email = forms.CharField(label='Электронная почта', required=True, widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Введите электронную почту'}))

@@ -16,6 +16,9 @@ urlpatterns = [
     path('not_active_<int:pk>/', not_active, name='not_active'),
     path('certificates/', certificates, name='certificates'),
     path('statistic/', statistic, name='statistic'),
+    path('my_works/', MyWorksCreateView.as_view(), name='my_works'),
+    path('edit_work_<int:pk>/', MyWorksUpdateView.as_view(), name='edit_work'),
+    path('delete_work_<int:pk>/', delete_work, name='delete_work'),
     path('get_answer_ajax/', answer_ajax, name='answer_ajax'),
 
     path('registration/', RegisterUser.as_view(), name='registration'),

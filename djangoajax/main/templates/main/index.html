@@ -236,7 +236,14 @@
           </div>
         </div>
       </div>
-        <br><p>Предпологаемый доход за этот месяц: {{ current_profit_for_this_month_to_now|add:expected_profit_for_this_remaining_month }} p.</p>
+        <br><p>Предпологаемый доход за этот месяц: {{ current_profit_for_this_month_to_now|add:expected_profit_for_this_remaining_month }} p.</p><br>
+        {% if profit_all %}
+            {% for el in profit_all %}
+                <p>Прибыль за месяц {{ el.date|date:'m.Y' }} - {{ el.profit }} p</p>
+            {% endfor %}
+            Итог по месяцам: {{ profit }} p
+        {% endif %}
+
     </div>
 {% endif %}
 

@@ -282,7 +282,7 @@ def confirm_book(request, pk):
                     start_time=today,
                     one_off=True,
                 )
-                return redirect('home')
+                return redirect('my_book')
             except:
                 form.add_error(None, 'Нужно выбрать услугу')  # Создается общая ошибка, если форма не связана с моделью и некорректна
         time = select_post.title.split()
@@ -307,6 +307,8 @@ def statistic(request):
 
         first_day = today - timedelta(today.day-1)              # Первый день месяца
         last_day = first_day + timedelta(days_in_month-1)       # Последний день месяца
+
+        print(first_day, last_day)
 
         posts_all = Post.objects.all().order_by('date')
         posts_clients = []
@@ -345,6 +347,11 @@ def statistic(request):
                     list_for_all_other_months.append(el)
                     expected_profit_for_all_next_months.append(el.service.price)
 
+        profit_all = ProfitForMonth.objects.all()
+        profit = 0
+        for el in profit_all:
+            profit += el.profit
+
         current_profit_for_this_month_to_now = sum(current_profit_for_this_month_to_now)
         expected_profit_for_this_remaining_month = sum(expected_profit_for_this_remaining_month)
         current_profit_to_now = sum(current_profit_to_now)
@@ -354,6 +361,8 @@ def statistic(request):
             'title': 'Статистика',
             'title_body': 'Статистика записей',
             'statistic': 'yes',
+            'profit_all': profit_all,
+            'profit': profit,
 
             'list_for_this_month_to_now': list_for_this_month_to_now,
             'current_profit_for_this_month_to_now': current_profit_for_this_month_to_now,
@@ -369,6 +378,55 @@ def statistic(request):
 
         }
         return render(request, 'main/index.html', context)
+
+
+class MyWorksCreateView(CreateView):
+    form_class = MyWorksCreateForm
+    template_name = 'main/my_works.html'
+    success_url = reverse_lazy('my_works')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Мои работы'
+        context['title_body'] = 'Мои работы'
+        context['title_block'] = 'Создать новую работу\n(Эту форму не видят пользователи)'
+        context['posts'] = MyWorks.objects.filter(is_active=True)
+        return context
+
+class MyWorksUpdateView(UpdateView):
+    model = MyWorks
+    form_class = MyWorksCreateForm
+    template_name = 'main/my_works.html'
+
+    def get_context_data(self, **kwargs):
+        if not self.request.user.is_staff:
+            context = {'error': 'error!'}
+            return context
+        else:
+            post = MyWorks.objects.get(pk=self.kwargs['pk'])
+            context = super().get_context_data(**kwargs)
+            context['title'] = 'Мои работы'
+            context['title_body'] = 'Изменение данных о работе'
+            context['title_block'] = 'Изменить работу'
+            context['post'] = post
+            context['delete'] = 'yes'
+            return context
+
+    def get_success_url(self):
+        return redirect('my_works')
+
+
+def delete_work(request, pk):
+    if not request.user.is_staff:
+        context = {
+            'error': 'error!',
+        }
+        return render(request, 'main/my_works.html', context)
+    else:
+        post = MyWorks.objects.get(pk=pk)
+        if post:
+            post.delete()
+        return redirect('my_works')
 
 
 def my_book(request):

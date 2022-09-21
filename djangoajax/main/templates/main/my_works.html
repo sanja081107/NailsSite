@@ -1,0 +1,79 @@
+{% extends 'main/base.html' %}
+
+{% block body %}
+
+<!--подключение скриптов и стилей bootstrap для карусели-->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha2/css/bootstrap.min.css" integrity="sha384-DhY6onE6f3zzKbjUPRc2hOzGAdEf4/Dz+WJwBvEYL/lkkIsI3ihufq9hk9K4lVoK" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+{% if not error %}
+    {% if request.user.is_staff %}
+
+        <h5 class="mb-4 fst-italic">{{ title_block }}</h5><br>
+        <form class="pb-4 border-bottom" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div>{{ form.non_field_errors }}</div>  <!-- Выдается общая ошибка по всем полям если форма не связана с моделью -->
+
+            <div class="add-post">
+                {% for el in form %}
+                    {% if el.label != 'Опубликовать' %}
+                        <p><label>{{ el.label }}:</label> {{ el }}</p>
+                        <div class="form-error">{{ el.errors }}</div>   <!-- Выдается ошибка по отдельному полю формы -->
+                    {% else %}
+                        <div class="row">
+                            <div class="col-sm">
+                                <p><label>{{ el.label }}:</label> {{ el }}</p>
+                                <div class="form-error">{{ el.errors }}</div>   <!-- Выдается ошибка по отдельному полю формы -->
+                            </div>
+                            <div class="col-sm">
+                                <br><button class="btn btn-primary" type="submit">Сохранить работу</button>
+                                <br>
+                                {% if delete %}
+                                    <br><a class="btn btn-danger" href="{% url 'delete_work' post.pk %}">Удалить работу</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </form><br>
+
+    {% endif %}
+
+    {% if posts %}
+        <div class="row">
+            <div class="col-sm">
+                {% for el in posts|slice:"::3" %}
+                    <img src="{{ el.photo.url }}" width="90%"><br>{{ el.title }} - {{ el.date }}
+                {% if request.user.is_staff %}
+                    <a href="{% url 'edit_work' el.pk %}"><i class="fa-solid fa-gear"></i></a>
+                {% endif %}
+                <br>
+                {% endfor %}
+            </div>
+            <div class="col-sm">
+                {% for el in posts|slice:"1::3" %}
+                    <img src="{{ el.photo.url }}" width="90%"><br>{{ el.title }} - {{ el.date }}
+                {% if request.user.is_staff %}
+                    <a href="{% url 'edit_work' el.pk %}"><i class="fa-solid fa-gear"></i></a>
+                {% endif %}
+                <br>
+                {% endfor %}
+            </div>
+            <div class="col-sm">
+                {% for el in posts|slice:"2::3" %}
+                    <img src="{{ el.photo.url }}" width="90%"><br>{{ el.title }} - {{ el.date }}
+                {% if request.user.is_staff %}
+                    <a href="{% url 'edit_work' el.pk %}"><i class="fa-solid fa-gear"></i></a>
+                {% endif %}
+                <br>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+{% else %}
+    <h4 class="mb-4 fst-italic">Ошибка доступа</h4>
+{% endif %}
+
+{% endblock %}
